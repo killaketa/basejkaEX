@@ -39,33 +39,33 @@ void R_PerformanceCounters( void ) {
 
 	if (r_speeds->integer == 1) {
 		const float texSize = R_SumOfUsedImages( qfalse )/(8*1048576.0f)*(r_texturebits->integer?r_texturebits->integer:glConfig.colorBits);
-		ri->Printf( PRINT_ALL,  "%i/%i shdrs/srfs %i leafs %i vrts %i/%i tris %.2fMB tex %.2f dc\n",
+		ri.Printf( PRINT_ALL,  "%i/%i shdrs/srfs %i leafs %i vrts %i/%i tris %.2fMB tex %.2f dc\n",
 			backEnd.pc.c_shaders, backEnd.pc.c_surfaces, tr.pc.c_leafs, backEnd.pc.c_vertexes,
 			backEnd.pc.c_indexes/3, backEnd.pc.c_totalIndexes/3,
 			texSize, backEnd.pc.c_overDraw / (float)(glConfig.vidWidth * glConfig.vidHeight) );
 	} else if (r_speeds->integer == 2) {
-		ri->Printf( PRINT_ALL,  "(patch) %i sin %i sclip  %i sout %i bin %i bclip %i bout\n",
+		ri.Printf( PRINT_ALL,  "(patch) %i sin %i sclip  %i sout %i bin %i bclip %i bout\n",
 			tr.pc.c_sphere_cull_patch_in, tr.pc.c_sphere_cull_patch_clip, tr.pc.c_sphere_cull_patch_out,
 			tr.pc.c_box_cull_patch_in, tr.pc.c_box_cull_patch_clip, tr.pc.c_box_cull_patch_out );
-		ri->Printf( PRINT_ALL,  "(md3) %i sin %i sclip  %i sout %i bin %i bclip %i bout\n",
+		ri.Printf( PRINT_ALL,  "(md3) %i sin %i sclip  %i sout %i bin %i bclip %i bout\n",
 			tr.pc.c_sphere_cull_md3_in, tr.pc.c_sphere_cull_md3_clip, tr.pc.c_sphere_cull_md3_out,
 			tr.pc.c_box_cull_md3_in, tr.pc.c_box_cull_md3_clip, tr.pc.c_box_cull_md3_out );
 	} else if (r_speeds->integer == 3) {
-		ri->Printf( PRINT_ALL,  "viewcluster: %i\n", tr.viewCluster );
+		ri.Printf( PRINT_ALL,  "viewcluster: %i\n", tr.viewCluster );
 	} else if (r_speeds->integer == 4) {
 		if ( backEnd.pc.c_dlightVertexes ) {
-			ri->Printf( PRINT_ALL,  "dlight srf:%i  culled:%i  verts:%i  tris:%i\n",
+			ri.Printf( PRINT_ALL,  "dlight srf:%i  culled:%i  verts:%i  tris:%i\n",
 				tr.pc.c_dlightSurfaces, tr.pc.c_dlightSurfacesCulled,
 				backEnd.pc.c_dlightVertexes, backEnd.pc.c_dlightIndexes / 3 );
 		}
 	}
 	else if (r_speeds->integer == 5 )
 	{
-		ri->Printf( PRINT_ALL, "zFar: %.0f\n", tr.viewParms.zFar );
+		ri.Printf( PRINT_ALL, "zFar: %.0f\n", tr.viewParms.zFar );
 	}
 	else if (r_speeds->integer == 6 )
 	{
-		ri->Printf( PRINT_ALL, "flare adds:%i tests:%i renders:%i\n",
+		ri.Printf( PRINT_ALL, "flare adds:%i tests:%i renders:%i\n",
 			backEnd.pc.c_flareAdds, backEnd.pc.c_flareTests, backEnd.pc.c_flareRenders );
 	}
 	else if (r_speeds->integer == 7) {
@@ -73,7 +73,7 @@ void R_PerformanceCounters( void ) {
 		const float backBuff= glConfig.vidWidth * glConfig.vidHeight * glConfig.colorBits / (8.0f * 1024*1024);
 		const float depthBuff= glConfig.vidWidth * glConfig.vidHeight * glConfig.depthBits / (8.0f * 1024*1024);
 		const float stencilBuff= glConfig.vidWidth * glConfig.vidHeight * glConfig.stencilBits / (8.0f * 1024*1024);
-		ri->Printf( PRINT_ALL,  "Tex MB %.2f + buffers %.2f MB = Total %.2fMB\n",
+		ri.Printf( PRINT_ALL,  "Tex MB %.2f + buffers %.2f MB = Total %.2fMB\n",
 			texSize, backBuff*2+depthBuff+stencilBuff, texSize+backBuff*2+depthBuff+stencilBuff);
 	}
 
@@ -90,7 +90,7 @@ void R_IssueRenderCommands( qboolean runPerformanceCounters ) {
 	renderCommandList_t	*cmdList;
 
 	cmdList = &backEndData->commands;
-	assert(cmdList);
+
 	// add an end-of-list command
 	byteAlias_t *ba = (byteAlias_t *)&cmdList->cmds[cmdList->used];
 	ba->ui = RC_END_OF_LIST;
@@ -128,23 +128,21 @@ void R_IssuePendingRenderCommands( void ) {
 
 /*
 ============
-R_GetCommandBuffer
+R_GetCommandBufferReserved
 
 make sure there is enough command space
 ============
 */
-void *R_GetCommandBuffer( int bytes ) {
+static void *R_GetCommandBufferReserved( int bytes, int reservedBytes ) {
 	renderCommandList_t	*cmdList;
 
 	cmdList = &backEndData->commands;
-	bytes = PAD(bytes, sizeof (void *));
-
-	assert(cmdList);
+	bytes = PAD(bytes, sizeof(void *));
 
 	// always leave room for the end of list command
-	if ( cmdList->used + bytes + 4 > MAX_RENDER_COMMANDS ) {
-		if ( bytes > MAX_RENDER_COMMANDS - 4 ) {
-			Com_Error( ERR_FATAL, "R_GetCommandBuffer: bad size %i", bytes );
+	if ( cmdList->used + bytes + sizeof( int ) + reservedBytes > MAX_RENDER_COMMANDS ) {
+		if ( bytes > MAX_RENDER_COMMANDS - (int)sizeof( int ) ) {
+			ri.Error( ERR_FATAL, "R_GetCommandBuffer: bad size %i", bytes );
 		}
 		// if we run out of room, just start dropping commands
 		return NULL;
@@ -153,6 +151,17 @@ void *R_GetCommandBuffer( int bytes ) {
 	cmdList->used += bytes;
 
 	return cmdList->cmds + cmdList->used - bytes;
+}
+
+/*
+============
+R_GetCommandBuffer
+
+make sure there is enough command space
+============
+*/
+static void *R_GetCommandBuffer( int bytes ) {
+	return R_GetCommandBufferReserved( bytes, PAD( sizeof( swapBuffersCommand_t ), sizeof(void *) ) );
 }
 
 
@@ -198,15 +207,13 @@ void	RE_SetColor( const float *rgba ) {
 	}
 	cmd->commandId = RC_SET_COLOR;
 	if ( !rgba ) {
-		static float colorWhite[4] = { 1, 1, 1, 1 };
-
 		rgba = colorWhite;
 	}
-
 	cmd->color[0] = rgba[0];
 	cmd->color[1] = rgba[1];
 	cmd->color[2] = rgba[2];
 	cmd->color[3] = rgba[3];
+
 }
 
 
@@ -219,6 +226,9 @@ void RE_StretchPic ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2, qhandle_t hShader ) {
 	stretchPicCommand_t	*cmd;
 
+	if ( !tr.registered ) {
+		return;
+	}
 	cmd = (stretchPicCommand_t *) R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
@@ -244,6 +254,9 @@ void RE_RotatePic ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader ) {
 	rotatePicCommand_t	*cmd;
 
+	if (!tr.registered) {
+		return;
+	}
 	cmd = (rotatePicCommand_t *) R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
@@ -270,6 +283,10 @@ void RE_RotatePic2 ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader ) {
 	rotatePicCommand_t	*cmd;
 
+	if (!tr.registered) {
+		return;
+	}
+
 	cmd = (rotatePicCommand_t *) R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
@@ -291,6 +308,9 @@ void RE_RenderWorldEffects(void)
 {
 	drawBufferCommand_t	*cmd;
 
+	if (!tr.registered) {
+		return;
+	}
 	cmd = (drawBufferCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
@@ -302,6 +322,9 @@ void RE_RenderAutoMap(void)
 {
 	drawBufferCommand_t	*cmd;
 
+	if (!tr.registered) {
+		return;
+	}
 	cmd = (drawBufferCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd )
 	{
@@ -319,7 +342,7 @@ for each RE_EndFrame
 ====================
 */
 void RE_BeginFrame( stereoFrame_t stereoFrame ) {
-	drawBufferCommand_t	*cmd;
+	drawBufferCommand_t	*cmd = NULL;
 
 	if ( !tr.registered ) {
 		return;
@@ -336,14 +359,14 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 	{
 		if ( glConfig.stencilBits < 4 )
 		{
-			ri->Printf( PRINT_ALL, "Warning: not enough stencil bits to measure overdraw: %d\n", glConfig.stencilBits );
-			ri->Cvar_Set( "r_measureOverdraw", "0" );
+			ri.Printf( PRINT_ALL, "Warning: not enough stencil bits to measure overdraw: %d\n", glConfig.stencilBits );
+			ri.Cvar_Set( "r_measureOverdraw", "0" );
 			r_measureOverdraw->modified = qfalse;
 		}
 		else if ( r_shadows->integer == 2 )
 		{
-			ri->Printf( PRINT_ALL, "Warning: stencil shadows and overdraw measurement are mutually exclusive\n" );
-			ri->Cvar_Set( "r_measureOverdraw", "0" );
+			ri.Printf( PRINT_ALL, "Warning: stencil shadows and overdraw measurement are mutually exclusive\n" );
+			ri.Cvar_Set( "r_measureOverdraw", "0" );
 			r_measureOverdraw->modified = qfalse;
 		}
 		else
@@ -442,7 +465,7 @@ void RE_EndFrame( int *frontEndMsec, int *backEndMsec ) {
 	if ( !tr.registered ) {
 		return;
 	}
-	cmd = (swapBuffersCommand_t *) R_GetCommandBuffer( sizeof( *cmd ) );
+	cmd = (swapBuffersCommand_t *) R_GetCommandBufferReserved( sizeof( *cmd ), 0 );
 	if ( !cmd ) {
 		return;
 	}

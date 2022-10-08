@@ -168,7 +168,7 @@ typedef struct client_s {
 	int				downloadSendTime;	// time we last got an ack from the client
 
 	int				deltaMessage;		// frame last client usercmd message
-	int				nextReliableTime;	// svs.time when another reliable command will be allowed
+	int				lastReliableTime;	// svs.time when reliable command was last received
 	int				lastPacketTime;		// svs.time when packet was last received
 	int				lastConnectTime;	// svs.time when connection started
 	int				nextSnapshotTime;	// send another snapshot when svs.time >= nextSnapshotTime
@@ -264,14 +264,18 @@ extern	cvar_t	*sv_maxPing;
 extern	cvar_t	*sv_gametype;
 extern	cvar_t	*sv_pure;
 extern	cvar_t	*sv_floodProtect;
+extern	cvar_t	*sv_floodProtectSlow;
 extern	cvar_t	*sv_lanForceRate;
 extern	cvar_t	*sv_needpass;
 extern	cvar_t	*sv_filterCommands;
 extern	cvar_t	*sv_autoDemo;
 extern	cvar_t	*sv_autoDemoBots;
 extern	cvar_t	*sv_autoDemoMaxMaps;
-extern	cvar_t	*sv_legacyFixForceSelect;
+extern	cvar_t	*sv_legacyFixes;
 extern	cvar_t	*sv_banFile;
+extern	cvar_t	*sv_maxOOBRate;
+extern	cvar_t	*sv_maxOOBRateIP;
+extern	cvar_t	*sv_autoWhitelist;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];
 extern	int serverBansCount;
@@ -283,24 +287,16 @@ extern	int serverBansCount;
 //
 typedef struct leakyBucket_s leakyBucket_t;
 struct leakyBucket_s {
-	netadrtype_t	type;
-
-	union {
-		byte	_4[4];
-	} ipv;
-
 	int					lastTime;
-	signed char			burst;
-
-	long				hash;
-
-	leakyBucket_t *prev, *next;
+	unsigned short		burst;
 };
 
 extern leakyBucket_t outboundLeakyBucket;
 
-qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period );
-qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period );
+qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period, int now );
+qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period, int now );
+void SVC_LoadWhitelist( void );
+void SVC_WhitelistAdr( netadr_t adr );
 void SV_FinalMessage (char *message);
 void QDECL SV_SendServerCommand( client_t *cl, const char *fmt, ...);
 
