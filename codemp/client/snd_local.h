@@ -180,29 +180,6 @@ typedef struct wavinfo_s {
 	int			dataofs;		// chunk starts this many bytes from file start
 } wavinfo_t;
 
-
-
-/*
-====================================================================
-
-  SYSTEM SPECIFIC FUNCTIONS
-
-====================================================================
-*/
-
-// initializes cycling through a DMA buffer and returns information on it
-qboolean SNDDMA_Init(void);
-
-// gets the current DMA position
-int		SNDDMA_GetDMAPos(void);
-
-// shutdown the DMA xfer.
-void	SNDDMA_Shutdown(void);
-
-void	SNDDMA_BeginPainting (void);
-
-void	SNDDMA_Submit(void);
-
 //====================================================================
 
 #define	MAX_CHANNELS			32
@@ -217,18 +194,17 @@ extern	dma_t	dma;
 extern	portable_samplepair_t	s_rawsamples[MAX_RAW_SAMPLES];
 portable_samplepair_t *S_GetRawSamplePointer();	// TA added this, but it just returns the s_rawsamples[] array above. Oh well...
 
-extern cvar_t	*s_volume;
-extern cvar_t	*s_volumeVoice;
-extern cvar_t	*s_nosound;
-extern cvar_t	*s_khz;
-extern cvar_t	*s_allowDynamicMusic;
-extern cvar_t	*s_show;
-extern cvar_t	*s_mixahead;
-
-extern cvar_t	*s_testsound;
-extern cvar_t	*s_separation;
-
-extern cvar_t	*s_doppler;
+extern cvar_t *s_allowDynamicMusic;
+extern cvar_t *s_doppler;
+extern cvar_t *s_initsound;
+extern cvar_t *s_khz;
+extern cvar_t *s_mixahead;
+extern cvar_t *s_nosound;
+extern cvar_t *s_separation;
+extern cvar_t *s_show;
+extern cvar_t *s_testsound;
+extern cvar_t *s_volume;
+extern cvar_t *s_volumeVoice;
 
 wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength);
 
