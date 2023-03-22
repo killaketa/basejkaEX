@@ -1,6 +1,6 @@
 # OpenJK and then some
 
-This is a project that uses OpenJK, but adds a couple features that I believe should have been made. If you're unfamiliar with OpenJK, [click here](https://github.com/JACoders/OpenJK/blob/master/README.md) to read more about it.
+BaseJKA+ is a project based on OpenJK, that aims to add a couple more features for servers while sticking to what makes basejka great: simplicity but still feels vanilla. If you're unfamiliar with OpenJK, [click here](https://github.com/JACoders/OpenJK/blob/master/README.md) to read more about it.
 
 # Changes and additions
 1.00
@@ -15,6 +15,4 @@ This is a project that uses OpenJK, but adds a couple features that I believe sh
 * restored the ability to use map glitches via dmflags 520
 
 1.03
-* Cheats are now toggled via rcon - sv_cheats
-
-A couple more to come soon.
+* Cheats are now toggled via rcon for all players - sv_cheats 1
