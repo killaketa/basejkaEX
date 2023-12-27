@@ -1332,6 +1332,12 @@ typedef struct playerState_s {
 	vec3_t		userVec1;
 	vec3_t		userVec2;
 
+	// basejkaEX add start
+	qboolean	entIncludes[MAX_GENTITIES]; // Send these entities to client no matter what!
+	qboolean	entExcludes[MAX_GENTITIES]; // Dont sent these entities to client no matter what!
+	// basejkaEX add end
+
+
 #ifdef _ONEBIT_COMBO
 	int			deltaOneBits;
 	int			deltaNumBits;

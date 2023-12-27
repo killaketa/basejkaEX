@@ -408,6 +408,9 @@ struct gentity_s {
 
 	// OpenJK add
 	int			useDebounceTime;	// for cultist_destroyer
+
+	// basejkaEX add
+	int			creatorEntNum;
 };
 
 #define DAMAGEREDIRECT_HEAD		1
@@ -800,6 +803,11 @@ struct gclient_s {
 		int		drainDebounce;
 		int		lightningDebounce;
 	} force;
+
+	// basejkaEX add start
+	qboolean	ghostMode;
+	int			lastGhostModeTime;
+	// basejkaEX add end
 };
 
 //Interest points
@@ -1106,9 +1114,10 @@ void	G_UseTargets (gentity_t *ent, gentity_t *activator);
 void	G_SetMovedir ( vec3_t angles, vec3_t movedir);
 void	G_SetAngles( gentity_t *ent, vec3_t angles );
 
-void	G_InitGentity( gentity_t *e );
-gentity_t	*G_Spawn (void);
-gentity_t *G_TempEntity( vec3_t origin, int event );
+void	G_SetCreatorEntNum( gentity_t* ent, int creatorEntNum );
+void	G_InitGentity( gentity_t *e, int creatorEntNum );
+gentity_t	*G_Spawn ( int creatorEntNum );
+gentity_t *G_TempEntity( vec3_t origin, int event, int creatorEntNum );
 gentity_t	*G_PlayEffect(int fxID, vec3_t org, vec3_t ang);
 gentity_t	*G_PlayEffectID(const int fxID, vec3_t org, vec3_t ang);
 gentity_t *G_ScreenShake(vec3_t org, gentity_t *target, float intensity, int duration, qboolean global);

@@ -53,7 +53,7 @@ gentity_t *G_PreDefSound(vec3_t org, int pdSound)
 {
 	gentity_t	*te;
 
-	te = G_TempEntity( org, EV_PREDEFSOUND );
+	te = G_TempEntity( org, EV_PREDEFSOUND, ENTITYNUM_WORLD );
 	te->s.eventParm = pdSound;
 	VectorCopy(org, te->s.origin);
 
@@ -333,23 +333,23 @@ void WP_InitForcePowers( gentity_t *ent ) {
 
 	if ( ent->s.eType != ET_NPC ) {
 		if ( HasSetSaberOnly() ) {
-			gentity_t *te = G_TempEntity( vec3_origin, EV_SET_FREE_SABER );
+			gentity_t *te = G_TempEntity( vec3_origin, EV_SET_FREE_SABER, ENTITYNUM_WORLD );
 			te->r.svFlags |= SVF_BROADCAST;
 			te->s.eventParm = 1;
 		}
 		else {
-			gentity_t *te = G_TempEntity( vec3_origin, EV_SET_FREE_SABER );
+			gentity_t *te = G_TempEntity( vec3_origin, EV_SET_FREE_SABER, ENTITYNUM_WORLD );
 			te->r.svFlags |= SVF_BROADCAST;
 			te->s.eventParm = 0;
 		}
 
 		if ( g_forcePowerDisable.integer ) {
-			gentity_t *te = G_TempEntity( vec3_origin, EV_SET_FORCE_DISABLE );
+			gentity_t *te = G_TempEntity( vec3_origin, EV_SET_FORCE_DISABLE, ENTITYNUM_WORLD );
 			te->r.svFlags |= SVF_BROADCAST;
 			te->s.eventParm = 1;
 		}
 		else {
-			gentity_t *te = G_TempEntity( vec3_origin, EV_SET_FORCE_DISABLE );
+			gentity_t *te = G_TempEntity( vec3_origin, EV_SET_FORCE_DISABLE, ENTITYNUM_WORLD );
 			te->r.svFlags |= SVF_BROADCAST;
 			te->s.eventParm = 0;
 		}
@@ -1258,7 +1258,7 @@ void ForceTeamHeal( gentity_t *self )
 			//At this point we know we got one, so add him into the collective event client bitflag
 			if (!te)
 			{
-				te = G_TempEntity( self->client->ps.origin, EV_TEAM_POWER);
+				te = G_TempEntity( self->client->ps.origin, EV_TEAM_POWER, ENTITYNUM_WORLD );
 				te->s.eventParm = 1; //eventParm 1 is heal, eventParm 2 is force regen
 
 				//since we had an extra check above, do the drain now because we got at least one guy
@@ -1360,7 +1360,7 @@ void ForceTeamForceReplenish( gentity_t *self )
 		//At this point we know we got one, so add him into the collective event client bitflag
 		if (!te)
 		{
-			te = G_TempEntity( self->client->ps.origin, EV_TEAM_POWER);
+			te = G_TempEntity( self->client->ps.origin, EV_TEAM_POWER, ENTITYNUM_WORLD );
 			te->s.eventParm = 2; //eventParm 1 is heal, eventParm 2 is force regen
 		}
 
@@ -2024,7 +2024,7 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 
 				if (traceEnt->client->forcePowerSoundDebounce < level.time)
 				{
-					tent = G_TempEntity( impactPoint, EV_FORCE_DRAINED);
+					tent = G_TempEntity( impactPoint, EV_FORCE_DRAINED, self->s.number );
 					tent->s.eventParm = DirToByte(dir);
 					tent->s.owner = traceEnt->s.number;
 
@@ -5465,6 +5465,12 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 				}
 				else
 					self->client->ps.fd.forcePowerRegenDebounceTime += Q_max(g_forceRegenTime.integer, 1);
+			}
+
+			//basejkaEX add start
+			// if player is in ghost mode then have no debounce time
+			if (self->client->ghostMode) {
+				self->client->ps.fd.forcePowerRegenDebounceTime = level.time;
 			}
 		}
 	}

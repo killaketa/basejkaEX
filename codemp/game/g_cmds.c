@@ -331,7 +331,7 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 		if ( !it )
 			return;
 
-		it_ent = G_Spawn();
+		it_ent = G_Spawn( ENTITYNUM_WORLD );
 		VectorCopy( ent->r.currentOrigin, it_ent->s.origin );
 		it_ent->classname = it->classname;
 		G_SpawnItem( it_ent, it );
@@ -907,7 +907,7 @@ void SetTeam( gentity_t *ent, char *s ) {
 	//if we were not on the spec team
 	if (oldTeam != TEAM_SPECTATOR)
 	{
-		gentity_t *tent = G_TempEntity( client->ps.origin, EV_PLAYER_TELEPORT_OUT );
+		gentity_t *tent = G_TempEntity( client->ps.origin, EV_PLAYER_TELEPORT_OUT, ENTITYNUM_NONE );
 		tent->s.clientNum = clientNum;
 	}
 
@@ -1781,7 +1781,7 @@ static void Cmd_VoiceCommand_f(gentity_t *ent)
 		return;
 	}
 
-	te = G_TempEntity(vec3_origin, EV_VOICECMD_SOUND);
+	te = G_TempEntity(vec3_origin, EV_VOICECMD_SOUND, ent->s.number);
 	te->s.groundEntityNum = ent->s.number;
 	te->s.eventParm = G_SoundIndex((char *)bg_customSiegeSoundNames[i]);
 	te->r.svFlags |= SVF_BROADCAST;
@@ -3368,6 +3368,55 @@ void Cmd_AddBot_f( gentity_t *ent ) {
 	trap->SendServerCommand( ent-g_entities, va( "print \"%s.\n\"", G_GetStringEdString( "MP_SVGAME", "ONLY_ADD_BOTS_AS_SERVER" ) ) );
 }
 
+// basejkaEX add start
+/*
+==================
+Cmd_GhostMode_f
+
+toggles ghost mode for player
+==================
+*/
+void Cmd_GhostMode_f(gentity_t* ent) {
+	int i;
+	char* msg = NULL;
+
+	if (ent->client->ps.duelInProgress) {
+		trap->SendServerCommand(ent - g_entities, va("print \"%s\n\"", "^1Ghost Mode Unavailable!"));
+		return;
+	}
+
+	if (ent->client->ghostMode) {
+		for (i = 0; i < level.num_entities; i++) {
+			ent->client->ps.entExcludes[i] = qfalse;
+		}
+		ent->takedamage = qtrue;
+		ent->r.svFlags = NULL;
+		ent->r.singleClient = ENTITYNUM_NONE;
+		msg = "^1Ghost Mode Disabled";
+	}
+	else {
+		if (level.time < (ent->client->lastGhostModeTime + 30000)) {
+			trap->SendServerCommand(ent - g_entities, va("print \"%s\n\"", "^1You must wait 30 seconds before toggling ghost mode again!"));
+			return;
+		}
+		for (i = 0; i < level.num_entities; i++) {
+			if (g_entities[i].creatorEntNum != ent - g_entities || g_entities[i].creatorEntNum != ENTITYNUM_WORLD) {
+				ent->client->ps.entExcludes[i] = qtrue;
+			}
+		}
+		ent->takedamage = qfalse;
+		ent->r.svFlags = SVF_SINGLECLIENT;
+		ent->r.singleClient = ent-g_entities;
+		msg = "^2Ghost Mode Enabled";
+	}
+
+	ent->client->ghostMode = !ent->client->ghostMode;
+
+	ent->client->lastGhostModeTime = level.time;
+	trap->SendServerCommand(ent - g_entities, va("print \"%s\n\"", msg));
+}
+// basejkaEX add end
+
 /*
 =================
 ClientCommand
@@ -3428,6 +3477,7 @@ command_t commands[] = {
 	{ "voice_cmd",			Cmd_VoiceCommand_f,			CMD_NOINTERMISSION },
 	{ "vote",				Cmd_Vote_f,					CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
+	{ "ghost",				Cmd_GhostMode_f,			CMD_ALIVE|CMD_NOINTERMISSION },
 };
 static const size_t numCommands = ARRAY_LEN( commands );
 

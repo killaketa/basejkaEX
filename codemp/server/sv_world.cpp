@@ -538,12 +538,14 @@ static float VectorDistance(vec3_t p1, vec3_t p2)
 static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 	static int	touchlist[MAX_GENTITIES];
 	int			i, num;
+	sharedEntity_t *owner = SV_GentityNum(clip->passEntityNum);
 	sharedEntity_t *touch;
 	int			passOwnerNum;
 	trace_t		trace, oldTrace= {0};
 	clipHandle_t	clipHandle;
 	float		*origin, *angles;
-	int			thisOwnerShared = 1;
+	int			thisOwnerShared = 1;/*
+	int			onlyHitOwner = 0;*/
 
 	num = SV_AreaEntities( clip->boxmins, clip->boxmaxs, touchlist, MAX_GENTITIES);
 
@@ -560,7 +562,12 @@ static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 	{
 		thisOwnerShared = 0;
 	}
-
+	/*
+	if ( SV_GentityNum( clip->passEntityNum)->r.svFlags & SVF_ONLYHITOWNER )
+	{
+		onlyHitOwner = 1;
+	}
+	*/
 	for ( i=0 ; i<num ; i++ ) {
 		if ( clip->trace.allsolid ) {
 			return;
@@ -572,7 +579,13 @@ static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 			if ( touchlist[i] == clip->passEntityNum ) {
 				continue;	// don't clip against the pass entity
 			}
-			if ( touch->r.ownerNum == clip->passEntityNum) {
+
+			if ( (owner->playerState && owner->playerState->entExcludes[touch->s.number]) ||
+				(touch->playerState && touch->playerState->entExcludes[owner->s.number]) ) {
+				continue;
+			}
+
+			if ( touch->r.ownerNum == clip->passEntityNum ) {
 				if (touch->r.svFlags & SVF_OWNERNOTSHARED)
 				{
 					if ( clip->contentmask != (MASK_SHOT | CONTENTS_LIGHTSABER) &&

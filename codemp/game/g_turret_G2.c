@@ -390,7 +390,7 @@ static void turretG2_fire ( gentity_t *ent, vec3_t start, vec3_t dir )
 	else
 	{
 		G_PlayEffectID( G_EffectIndex("blaster/muzzle_flash"), org, ang );
-		bolt = G_Spawn();
+		bolt = G_Spawn( ent->s.number );
 
 		bolt->classname = "turret_proj";
 		bolt->nextthink = level.time + 10000;

@@ -1099,7 +1099,7 @@ void SendPendingPredictableEvents( playerState_t *ps ) {
 		extEvent = ps->externalEvent;
 		ps->externalEvent = 0;
 		// create temporary entity for event
-		t = G_TempEntity( ps->origin, event );
+		t = G_TempEntity( ps->origin, event, ENTITYNUM_WORLD );
 		number = t->s.number;
 		BG_PlayerStateToEntityState( ps, &t->s, qtrue );
 		t->s.number = number;
@@ -1861,6 +1861,51 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 	}
 }
 
+// basejkaEX add start
+/*
+==============
+G_StartPrivDuel
+
+Makes all players (other than opponent) invisible to the duelist
+==============
+*/
+void G_StartPrivDuel(gentity_t* ent) {
+	int i;
+
+	//ent->r.svFlags = SVF_ONLYHITOWNER;
+	//
+	//ent->r.ownerNum = ent->client->ps.duelIndex;
+
+	//ent->client->ps.entIncludes[ENTITYNUM_WORLD] = qtrue;
+	for ( i = 0; i < level.num_entities; i++ ) {
+		if ( g_entities[i].s.solid != SOLID_BMODEL && i != ent->client->ps.duelIndex &&
+			(g_entities[i].creatorEntNum != ent->client->ps.duelIndex || g_entities[i].creatorEntNum != ent->s.number || g_entities[i].creatorEntNum != ENTITYNUM_WORLD) ) {
+			ent->client->ps.entExcludes[i] = qtrue;
+		}
+	}
+}
+
+/*
+==============
+G_EndPrivDuel
+
+Makes all players visible to the duelist
+==============
+*/
+void G_EndPrivDuel(gentity_t* ent) {
+	int i;
+
+	//ent->r.svFlags = NULL;
+	//
+	//ent->r.ownerNum = ENTITYNUM_NONE;
+
+	//ent->client->ps.entIncludes[ent->client->ps.duelIndex] = qfalse;
+	for (i = 0; i < level.num_entities; i++) {
+		ent->client->ps.entExcludes[i] = qfalse;
+	}
+}
+// basejkaEX add end
+
 /*
 ==============
 ClientThink
@@ -2437,6 +2482,10 @@ void ClientThink_real( gentity_t *ent ) {
 					G_Sound(ent, CHAN_AUTO, ent->client->saber[1].soundOn);
 				}
 
+				//basejkaEX add start
+				G_StartPrivDuel(ent);
+				//basejkaEX add end
+
 				G_AddEvent(ent, EV_PRIVATE_DUEL, 2);
 
 				ent->client->ps.duelTime = 0;
@@ -2460,6 +2509,10 @@ void ClientThink_real( gentity_t *ent ) {
 					G_Sound(duelAgainst, CHAN_AUTO, duelAgainst->client->saber[1].soundOn);
 				}
 
+				//basejkaEX add start
+				G_StartPrivDuel(duelAgainst);
+				//basejkaEX add end
+
 				G_AddEvent(duelAgainst, EV_PRIVATE_DUEL, 2);
 
 				duelAgainst->client->ps.duelTime = 0;
@@ -2478,12 +2531,22 @@ void ClientThink_real( gentity_t *ent ) {
 			duelAgainst->client->ps.duelIndex != ent->s.number)
 		{
 			ent->client->ps.duelInProgress = 0;
+
+			//basejkaEX add start
+			G_EndPrivDuel(ent);
+			//basejkaEX add end
+
 			G_AddEvent(ent, EV_PRIVATE_DUEL, 0);
 		}
 		else if (duelAgainst->health < 1 || duelAgainst->client->ps.stats[STAT_HEALTH] < 1)
 		{
 			ent->client->ps.duelInProgress = 0;
 			duelAgainst->client->ps.duelInProgress = 0;
+
+			//basejkaEX add start
+			G_EndPrivDuel(ent);
+			G_EndPrivDuel(duelAgainst);
+			//basejkaEX add end
 
 			G_AddEvent(ent, EV_PRIVATE_DUEL, 0);
 			G_AddEvent(duelAgainst, EV_PRIVATE_DUEL, 0);
@@ -2531,6 +2594,11 @@ void ClientThink_real( gentity_t *ent ) {
 			{
 				ent->client->ps.duelInProgress = 0;
 				duelAgainst->client->ps.duelInProgress = 0;
+
+				//basejkaEX add start
+				G_EndPrivDuel(ent);
+				G_EndPrivDuel(duelAgainst);
+				//basejkaEX add end
 
 				G_AddEvent(ent, EV_PRIVATE_DUEL, 0);
 				G_AddEvent(duelAgainst, EV_PRIVATE_DUEL, 0);

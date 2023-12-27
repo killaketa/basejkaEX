@@ -5208,7 +5208,7 @@ static void Jedi_Combat( void )
 			{//FIXME: try to find a waypoint that can see enemy, jump from there
 				if ( NPCS.NPCInfo->aiFlags & NPCAI_BLOCKED )
 				{//try to jump to the blockedDest
-					gentity_t *tempGoal = G_Spawn();//ugh, this is NOT good...?
+					gentity_t *tempGoal = G_Spawn(ENTITYNUM_NONE);//ugh, this is NOT good...?
 					G_SetOrigin( tempGoal, NPCS.NPCInfo->blockedDest );
 					trap->LinkEntity( (sharedEntity_t *)tempGoal );
 					if ( Jedi_TryJump( tempGoal ) )
@@ -5787,7 +5787,7 @@ void NPC_BSJedi_FollowLeader( void )
 		{//try to jump to the blockedDest
 			if ( fabs(NPCS.NPCInfo->blockedDest[2]-NPCS.NPC->r.currentOrigin[2]) > 64 )
 			{
-				gentity_t *tempGoal = G_Spawn();//ugh, this is NOT good...?
+				gentity_t *tempGoal = G_Spawn(ENTITYNUM_NONE);//ugh, this is NOT good...?
 				G_SetOrigin( tempGoal, NPCS.NPCInfo->blockedDest );
 				trap->LinkEntity( (sharedEntity_t *)tempGoal );
 				TIMER_Set( NPCS.NPC, "jumpChaseDebounce", -1 );

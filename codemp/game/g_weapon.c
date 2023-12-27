@@ -624,11 +624,11 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 			{ //broadcast and stop the shot because it was blocked
 				gentity_t *te = NULL;
 
-				tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_MAIN_SHOT );
+				tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_MAIN_SHOT, ent->s.number);
 				VectorCopy( muzzle, tent->s.origin2 );
 				tent->s.eventParm = ent->s.number;
 
-				te = G_TempEntity( tr.endpos, EV_SABER_BLOCK );
+				te = G_TempEntity( tr.endpos, EV_SABER_BLOCK, ent->s.number);
 				VectorCopy(tr.endpos, te->s.origin);
 				VectorCopy(tr.plane.normal, te->s.angles);
 				if (!te->s.angles[0] && !te->s.angles[1] && !te->s.angles[2])
@@ -656,7 +656,7 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 	}
 
 	// always render a shot beam, doing this the old way because I don't much feel like overriding the effect.
-	tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_MAIN_SHOT );
+	tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_MAIN_SHOT, ent->s.number);
 	VectorCopy( muzzle, tent->s.origin2 );
 	tent->s.eventParm = ent->s.number;
 
@@ -673,7 +673,7 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 
 			G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NORMAL, MOD_DISRUPTOR );
 
-			tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_HIT );
+			tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_HIT, ent->s.number);
 			tent->s.eventParm = DirToByte( tr.plane.normal );
 			if (traceEnt->client)
 			{
@@ -683,7 +683,7 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 		else
 		{
 			 // Hmmm, maybe don't make any marks on things that could break
-			tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_SNIPER_MISS );
+			tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_SNIPER_MISS, ent->s.number );
 			tent->s.eventParm = DirToByte( tr.plane.normal );
 			tent->s.weapon = 1;
 		}
@@ -841,12 +841,12 @@ void WP_DisruptorAltFire( gentity_t *ent )
 			{ //broadcast and stop the shot because it was blocked
 				gentity_t *te = NULL;
 
-				tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_SNIPER_SHOT );
+				tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_SNIPER_SHOT, ent->s.number );
 				VectorCopy( muzzle, tent->s.origin2 );
 				tent->s.shouldtarget = fullCharge;
 				tent->s.eventParm = ent->s.number;
 
-				te = G_TempEntity( tr.endpos, EV_SABER_BLOCK );
+				te = G_TempEntity( tr.endpos, EV_SABER_BLOCK, ent->s.number );
 				VectorCopy(tr.endpos, te->s.origin);
 				VectorCopy(tr.plane.normal, te->s.angles);
 				if (!te->s.angles[0] && !te->s.angles[1] && !te->s.angles[2])
@@ -862,7 +862,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		}
 
 		// always render a shot beam, doing this the old way because I don't much feel like overriding the effect.
-		tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_SNIPER_SHOT );
+		tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_SNIPER_SHOT, ent->s.number );
 		VectorCopy( muzzle, tent->s.origin2 );
 		tent->s.shouldtarget = fullCharge;
 		tent->s.eventParm = ent->s.number;
@@ -875,7 +875,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 				tent->s.otherEntityNum = traceEnt->s.number;
 
 				// Create a simple impact type mark
-				tent = G_TempEntity(tr.endpos, EV_MISSILE_MISS);
+				tent = G_TempEntity(tr.endpos, EV_MISSILE_MISS, ent->s.number );
 				tent->s.eventParm = DirToByte(tr.plane.normal);
 				tent->s.eFlags |= EF_ALT_FIRING;
 
@@ -898,14 +898,14 @@ void WP_DisruptorAltFire( gentity_t *ent )
 						G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage,
 								DAMAGE_NO_KNOCKBACK, MOD_DISRUPTOR_SNIPER );
 
-						tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_HIT );
+						tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_HIT, ent->s.number );
 						tent->s.eventParm = DirToByte( tr.plane.normal );
 					}
 				 }
 				 else
 				 {
 					 // Hmmm, maybe don't make any marks on things that could break
-					tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_SNIPER_MISS );
+					tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_SNIPER_MISS, ent->s.number );
 					tent->s.eventParm = DirToByte( tr.plane.normal );
 				 }
 				break; // and don't try any more traces
@@ -948,7 +948,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 					VectorClear(traceEnt->client->ps.velocity);
 				}
 
-				tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_HIT );
+				tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_HIT, ent->s.number );
 				tent->s.eventParm = DirToByte( tr.plane.normal );
 				if (traceEnt->client)
 				{
@@ -1457,7 +1457,7 @@ static void WP_DEMP2_AltFire( gentity_t *ent )
 
 	trap->Trace( &tr, start, NULL, NULL, end, ent->s.number, MASK_SHOT, qfalse, 0, 0);
 
-	missile = G_Spawn();
+	missile = G_Spawn( ent->s.number );
 	G_SetOrigin(missile, tr.endpos);
 	//In SP the impact actually travels as a missile based on the trace fraction, but we're
 	//just going to be instant. -rww
@@ -2076,7 +2076,7 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean altFire )
 	VectorCopy( forward, dir );
 	VectorCopy( muzzle, start );
 
-	bolt = G_Spawn();
+	bolt = G_Spawn( ent->s.number );
 
 	bolt->physicsObject = qtrue;
 
@@ -2630,7 +2630,7 @@ void WP_PlaceLaserTrap( gentity_t *ent, qboolean alt_fire )
 	VectorCopy( forward, dir );
 	VectorCopy( muzzle, start );
 
-	laserTrap = G_Spawn();
+	laserTrap = G_Spawn( ent->s.number );
 
 	//limit to 10 placed at any one time
 	//see how many there are now
@@ -2823,7 +2823,7 @@ void charge_stick (gentity_t *self, gentity_t *other, trace_t *trace)
 
 	G_Sound(self, CHAN_WEAPON, G_SoundIndex("sound/weapons/detpack/stick.wav"));
 
-	tent = G_TempEntity( self->r.currentOrigin, EV_MISSILE_MISS );
+	tent = G_TempEntity( self->r.currentOrigin, EV_MISSILE_MISS, self->s.number );
 	tent->s.weapon = 0;
 	tent->parent = self;
 	tent->r.ownerNum = self->s.number;
@@ -2880,7 +2880,7 @@ void drop_charge (gentity_t *self, vec3_t start, vec3_t dir)
 
 	VectorNormalize (dir);
 
-	bolt = G_Spawn();
+	bolt = G_Spawn( self->s.number );
 	bolt->classname = "detpack";
 	bolt->nextthink = level.time + FRAMETIME;
 	bolt->think = G_RunObject;
@@ -3313,7 +3313,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 //	shotDist = VectorNormalize( dir );
 
 	//let's pack all this junk into a single tempent, and send it off.
-	tent = G_TempEntity(tr.endpos, EV_CONC_ALT_IMPACT);
+	tent = G_TempEntity(tr.endpos, EV_CONC_ALT_IMPACT, ent->s.number );
 	tent->s.eventParm = DirToByte(tr.plane.normal);
 	tent->s.owner = ent->s.number;
 	VectorCopy(dir, tent->s.angles);
@@ -3944,7 +3944,7 @@ void G_VehMuzzleFireFX( gentity_t *ent, gentity_t *broadcaster, int muzzlesFired
 
 	if (!broadcaster)
 	{ //oh well. We will WASTE A TEMPENT.
-		b = G_TempEntity( ent->client->ps.origin, EV_VEH_FIRE );
+		b = G_TempEntity( ent->client->ps.origin, EV_VEH_FIRE, ent->s.number );
 	}
 	else
 	{ //joy

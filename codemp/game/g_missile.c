@@ -300,7 +300,7 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life,
 {
 	gentity_t	*missile;
 
-	missile = G_Spawn();
+	missile = G_Spawn( owner->s.number );
 
 	missile->nextthink = level.time + life;
 	missile->think = G_FreeEntity;
@@ -341,7 +341,7 @@ void G_MissileBounceEffect( gentity_t *ent, vec3_t org, vec3_t dir )
 		break;
 	default:
 		{
-			gentity_t *te = G_TempEntity( org, EV_SABER_BLOCK );
+			gentity_t *te = G_TempEntity( org, EV_SABER_BLOCK, ent->s.number );
 			VectorCopy(org, te->s.origin);
 			VectorCopy(dir, te->s.angles);
 			te->s.eventParm = 0;
@@ -513,7 +513,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		gentity_t *te;
 		int otherDefLevel = other->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE];
 
-		te = G_TempEntity( ent->r.currentOrigin, EV_SABER_BLOCK );
+		te = G_TempEntity( ent->r.currentOrigin, EV_SABER_BLOCK, ent->s.number );
 		VectorCopy(ent->r.currentOrigin, te->s.origin);
 		VectorCopy(trace->plane.normal, te->s.angles);
 		te->s.eventParm = 0;
@@ -590,7 +590,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 				WP_SaberBlockNonRandom(otherOwner, ent->r.currentOrigin, qtrue);
 			}
 
-			te = G_TempEntity( ent->r.currentOrigin, EV_SABER_BLOCK );
+			te = G_TempEntity( ent->r.currentOrigin, EV_SABER_BLOCK, ent->s.number);
 			VectorCopy(ent->r.currentOrigin, te->s.origin);
 			VectorCopy(trace->plane.normal, te->s.angles);
 			te->s.eventParm = 0;

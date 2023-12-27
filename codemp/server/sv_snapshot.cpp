@@ -426,6 +426,13 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			}
 		}
 
+		// basejkaEX add start
+		// exclude ents from snapshot. if theyre on whitelist too then dont exclude
+		if ( frame->ps.entExcludes[e] && !(frame->ps.entIncludes[e]) ) {
+			continue;
+		}
+		// basejkaEX add end
+
 		svEnt = SV_SvEntityForGentity( ent );
 
 		// don't double add an entity through portals

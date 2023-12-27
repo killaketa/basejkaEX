@@ -525,7 +525,7 @@ int Q3_PlaySound( int taskID, int entID, const char *name, const char *channel )
 	{//Broadcast the sound
 		gentity_t	*te;
 
-		te = G_TempEntity( ent->r.currentOrigin, EV_GLOBAL_SOUND );
+		te = G_TempEntity( ent->r.currentOrigin, EV_GLOBAL_SOUND, ent->s.number );
 		te->s.eventParm = soundHandle;
 		te->r.svFlags |= SVF_BROADCAST;
 	}
@@ -1921,7 +1921,7 @@ static qboolean Q3_SetTeleportDest( int entID, vec3_t org )
 	{
 		if ( SpotWouldTelefrag2( teleEnt, org ) )
 		{
-			gentity_t *teleporter = G_Spawn();
+			gentity_t *teleporter = G_Spawn( ENTITYNUM_WORLD );
 
 			G_SetOrigin( teleporter, org );
 			teleporter->r.ownerNum = teleEnt->s.number;
@@ -5138,7 +5138,7 @@ static qboolean Q3_SetSolid( int entID, qboolean solid)
 		ent->r.contents = CONTENTS_BODY;
 		if ( SpotWouldTelefrag2( ent, ent->r.currentOrigin ) )
 		{
-			gentity_t *solidifier = G_Spawn();
+			gentity_t *solidifier = G_Spawn( ENTITYNUM_WORLD );
 
 			solidifier->r.ownerNum = ent->s.number;
 

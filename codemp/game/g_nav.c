@@ -381,7 +381,7 @@ int NAV_FindClosestWaypointForPoint( gentity_t *ent, vec3_t point )
 {
 	int	bestWP;
 	//FIXME: can we make this a static ent?
-	gentity_t *marker = G_Spawn();
+	gentity_t *marker = G_Spawn( ENTITYNUM_NONE );
 
 	if ( !marker )
 	{
@@ -407,7 +407,7 @@ int NAV_FindClosestWaypointForPoint2( vec3_t point )
 {
 	int	bestWP;
 	//FIXME: can we make this a static ent?
-	gentity_t *marker = G_Spawn();
+	gentity_t *marker = G_Spawn( ENTITYNUM_NONE );
 
 	if ( !marker )
 	{

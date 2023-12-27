@@ -1011,7 +1011,7 @@ void InitBodyQue (void) {
 
 	level.bodyQueIndex = 0;
 	for (i=0; i<BODY_QUEUE_SIZE ; i++) {
-		ent = G_Spawn();
+		ent = G_Spawn( ENTITYNUM_NONE );
 		ent->classname = "bodyque";
 		ent->neverFree = qtrue;
 		level.bodyQue[i] = ent;
@@ -1154,6 +1154,7 @@ static qboolean CopyToBodyQue( gentity_t *ent ) {
 	}
 
 	VectorCopy ( body->s.pos.trBase, body->r.currentOrigin );
+	G_SetCreatorEntNum( body, ent->s.number );
 	trap->LinkEntity ((sharedEntity_t *)body);
 
 	return qtrue;
@@ -1261,7 +1262,7 @@ void ClientRespawn( gentity_t *ent ) {
 				// Respawn time.
 				if ( ent->s.number < MAX_CLIENTS )
 				{
-					gentity_t *te = G_TempEntity( ent->client->ps.origin, EV_SIEGESPEC );
+					gentity_t *te = G_TempEntity( ent->client->ps.origin, EV_SIEGESPEC, ENTITYNUM_WORLD );
 					te->s.time = g_siegeRespawnCheck;
 					te->s.owner = ent->s.number;
 				}
@@ -2574,7 +2575,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	// count current clients and rank for scoreboard
 	CalculateRanks();
 
-	te = G_TempEntity( vec3_origin, EV_CLIENTJOIN );
+	te = G_TempEntity( vec3_origin, EV_CLIENTJOIN, ENTITYNUM_WORLD );
 	te->r.svFlags |= SVF_BROADCAST;
 	te->s.eventParm = clientNum;
 
@@ -2659,7 +2660,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	if ( ent->r.linked ) {
 		trap->UnlinkEntity( (sharedEntity_t *)ent );
 	}
-	G_InitGentity( ent );
+	G_InitGentity( ent, clientNum );
 	ent->touch = 0;
 	ent->pain = 0;
 	ent->client = client;
@@ -3781,7 +3782,7 @@ void ClientSpawn(gentity_t *ent) {
 			// positively link the client, even if the command times are weird
 			VectorCopy(ent->client->ps.origin, ent->r.currentOrigin);
 
-			tent = G_TempEntity(ent->client->ps.origin, EV_PLAYER_TELEPORT_IN);
+			tent = G_TempEntity(ent->client->ps.origin, EV_PLAYER_TELEPORT_IN, ENTITYNUM_NONE);
 			tent->s.clientNum = ent->s.clientNum;
 
 			trap->LinkEntity ((sharedEntity_t *)ent);
@@ -3956,7 +3957,7 @@ void ClientDisconnect( int clientNum ) {
 	// send effect if they were completely connected
 	if ( ent->client->pers.connected == CON_CONNECTED
 		&& ent->client->sess.sessionTeam != TEAM_SPECTATOR ) {
-		tent = G_TempEntity( ent->client->ps.origin, EV_PLAYER_TELEPORT_OUT );
+		tent = G_TempEntity( ent->client->ps.origin, EV_PLAYER_TELEPORT_OUT, ENTITYNUM_NONE );
 		tent->s.clientNum = ent->s.clientNum;
 
 		// They don't get to take powerups with them!
@@ -4032,6 +4033,12 @@ void ClientDisconnect( int clientNum ) {
 	}
 
 	G_ClearClientLog(clientNum);
+
+	for (i = 0; i < level.num_entities; i++) {
+		if (g_entities[i].creatorEntNum == clientNum) {
+			G_SetCreatorEntNum( &g_entities[i], ENTITYNUM_NONE );
+		}
+	}
 }
 
 

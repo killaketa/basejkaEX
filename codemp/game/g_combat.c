@@ -436,7 +436,7 @@ ScorePlum
 void ScorePlum( gentity_t *ent, vec3_t origin, int score ) {
 	gentity_t *plum;
 
-	plum = G_TempEntity( origin, EV_SCOREPLUM );
+	plum = G_TempEntity( origin, EV_SCOREPLUM, ENTITYNUM_WORLD );
 	// only send this temp entity to a single client
 	plum->r.svFlags |= SVF_SINGLECLIENT;
 	plum->r.singleClient = ent->s.number;
@@ -529,7 +529,7 @@ void TossClientWeapon(gentity_t *self, vec3_t direction, float speed)
 	vel[1] = direction[1]*speed;
 	vel[2] = direction[2]*speed;
 
-	launched = LaunchItem(item, self->client->ps.origin, vel);
+	launched = LaunchItem(item, self->client->ps.origin, vel, self->s.number);
 
 	launched->s.generic1 = self->s.number;
 	launched->s.powerups = level.time + 1500;
@@ -624,7 +624,7 @@ void TossClientItems( gentity_t *self ) {
 		item = BG_FindItemForWeapon( weapon );
 
 		// tell all clients to remove the weapon model on this guy until he respawns
-		te = G_TempEntity( vec3_origin, EV_DESTROY_WEAPON_MODEL );
+		te = G_TempEntity( vec3_origin, EV_DESTROY_WEAPON_MODEL, ENTITYNUM_WORLD );
 		te->r.svFlags |= SVF_BROADCAST;
 		te->s.eventParm = self->s.number;
 
@@ -2511,7 +2511,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	// broadcast the death event to everyone
 	if (self->s.eType != ET_NPC && !g_noPDuelCheck)
 	{
-		ent = G_TempEntity( self->r.currentOrigin, EV_OBITUARY );
+		ent = G_TempEntity( self->r.currentOrigin, EV_OBITUARY, ENTITYNUM_WORLD );
 		ent->s.eventParm = meansOfDeath;
 		ent->s.otherEntityNum = self->s.number;
 		ent->s.otherEntityNum2 = killer;
@@ -3285,7 +3285,7 @@ void G_GetDismemberBolt(gentity_t *self, vec3_t boltPoint, int limbType)
 		boltAngles[1] = -boltMatrix.matrix[1][1];
 		boltAngles[2] = -boltMatrix.matrix[2][1];
 
-		te = G_TempEntity( boltPoint, EV_SABER_HIT );
+		te = G_TempEntity( boltPoint, EV_SABER_HIT, self->s.number );
 		te->s.otherEntityNum = self->s.number;
 		te->s.otherEntityNum2 = ENTITYNUM_NONE;
 		te->s.weapon = 0;//saberNum
@@ -3411,7 +3411,7 @@ void G_Dismember( gentity_t *ent, gentity_t *enemy, vec3_t point, int limbType, 
 	}
 
 	VectorCopy( point, newPoint );
-	limb = G_Spawn();
+	limb = G_Spawn( ENTITYNUM_NONE );
 	limb->classname = "playerlimb";
 
 	/*
@@ -5344,7 +5344,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			// Send off an event to show a shield shell on the player, pointing in the right direction.
 			//evEnt = G_TempEntity(vec3_origin, EV_SHIELD_HIT);
 			//rww - er.. what the? This isn't broadcast, why is it being set on vec3_origin?!
-			evEnt = G_TempEntity(targ->r.currentOrigin, EV_SHIELD_HIT);
+			evEnt = G_TempEntity(targ->r.currentOrigin, EV_SHIELD_HIT, targ->s.number);
 			evEnt->s.otherEntityNum = targ->s.number;
 			evEnt->s.eventParm = DirToByte(dir);
 			evEnt->s.time2=shieldAbsorbed;
@@ -5720,7 +5720,7 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 			if (ent && ent->client && roastPeople && missile &&
 				!VectorCompare(ent->r.currentOrigin, missile->r.currentOrigin))
 			{ //the thing calling this function can create burn marks on people, so create an event to do so
-				gentity_t *evEnt = G_TempEntity(ent->r.currentOrigin, EV_GHOUL2_MARK);
+				gentity_t *evEnt = G_TempEntity(ent->r.currentOrigin, EV_GHOUL2_MARK, ent->s.number);
 
 				evEnt->s.otherEntityNum = ent->s.number; //the entity the mark should be placed on
 				evEnt->s.weapon = WP_ROCKET_LAUNCHER; //always say it's rocket so we make the right mark

@@ -557,7 +557,7 @@ void SiegeBroadcast_OBJECTIVECOMPLETE(int team, int client, int objective)
 
 	VectorClear(nomatter);
 
-	te = G_TempEntity( nomatter, EV_SIEGE_OBJECTIVECOMPLETE );
+	te = G_TempEntity( nomatter, EV_SIEGE_OBJECTIVECOMPLETE, ENTITYNUM_WORLD );
 	te->r.svFlags |= SVF_BROADCAST;
 	te->s.eventParm = team;
 	te->s.weapon = client;
@@ -571,7 +571,7 @@ void SiegeBroadcast_ROUNDOVER(int winningteam, int winningclient)
 
 	VectorClear(nomatter);
 
-	te = G_TempEntity( nomatter, EV_SIEGE_ROUNDOVER );
+	te = G_TempEntity( nomatter, EV_SIEGE_ROUNDOVER, ENTITYNUM_WORLD );
 	te->r.svFlags |= SVF_BROADCAST;
 	te->s.eventParm = winningteam;
 	te->s.weapon = winningclient;

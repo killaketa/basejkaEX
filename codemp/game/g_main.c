@@ -422,7 +422,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 				return;
 			}
 
-			ent = G_Spawn();
+			ent = G_Spawn( ENTITYNUM_NONE );
 			G_SetOrigin( ent, spawnpoint->s.origin );
 			SP_info_jedimaster_start( ent );
 		}
@@ -2405,7 +2405,7 @@ void CheckTournament( void ) {
 			if (level.numPlayingClients >= 3 &&
 				G_CanResetDuelists())
 			{
-				gentity_t *te = G_TempEntity(vec3_origin, EV_GLOBAL_DUEL);
+				gentity_t *te = G_TempEntity(vec3_origin, EV_GLOBAL_DUEL, ENTITYNUM_WORLD);
 				te->r.svFlags |= SVF_BROADCAST;
 				//this is really pretty nasty, but..
 				te->s.otherEntityNum = level.sortedClients[0];
@@ -2441,7 +2441,7 @@ void CheckTournament( void ) {
 			{ //pulled in a needed person
 				if (G_CanResetDuelists())
 				{
-					gentity_t *te = G_TempEntity(vec3_origin, EV_GLOBAL_DUEL);
+					gentity_t *te = G_TempEntity(vec3_origin, EV_GLOBAL_DUEL, ENTITYNUM_WORLD);
 					te->r.svFlags |= SVF_BROADCAST;
 					//this is really pretty nasty, but..
 					te->s.otherEntityNum = level.sortedClients[0];

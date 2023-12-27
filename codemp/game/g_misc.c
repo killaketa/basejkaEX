@@ -208,10 +208,10 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	// use temp events at source and destination to prevent the effect
 	// from getting dropped by a second player event
 	if ( player->client->sess.sessionTeam != TEAM_SPECTATOR ) {
-		tent = G_TempEntity( player->client->ps.origin, EV_PLAYER_TELEPORT_OUT );
+		tent = G_TempEntity( player->client->ps.origin, EV_PLAYER_TELEPORT_OUT, player->s.number );
 		tent->s.clientNum = player->s.clientNum;
 
-		tent = G_TempEntity( origin, EV_PLAYER_TELEPORT_IN );
+		tent = G_TempEntity( origin, EV_PLAYER_TELEPORT_IN, player->s.number);
 		tent->s.clientNum = player->s.clientNum;
 	}
 
@@ -2941,7 +2941,7 @@ void faller_think(gentity_t *ent)
 
 void misc_faller_create( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
-	gentity_t *faller = G_Spawn();
+	gentity_t *faller = G_Spawn( ENTITYNUM_NONE );
 
 	faller->genericValue10 = G_SoundIndex("sound/player/fallsplat");
 	faller->genericValue9 = G_SoundIndex("sound/chars/stofficer1/misc/falling1");

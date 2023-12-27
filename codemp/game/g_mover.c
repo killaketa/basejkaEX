@@ -1234,7 +1234,7 @@ void Think_SpawnNewDoorTrigger( gentity_t *ent )
 	mins[best] -= 120;
 
 	// create a trigger with this size
-	other = G_Spawn ();
+	other = G_Spawn ( ENTITYNUM_WORLD );
 	VectorCopy (mins, other->r.mins);
 	VectorCopy (maxs, other->r.maxs);
 	other->parent = ent;
@@ -1564,7 +1564,7 @@ void SpawnPlatTrigger( gentity_t *ent ) {
 
 	// the middle trigger will be a thin trigger just
 	// above the starting position
-	trigger = G_Spawn();
+	trigger = G_Spawn( ENTITYNUM_WORLD );
 	trigger->touch = Touch_PlatCenterTrigger;
 	trigger->r.contents = CONTENTS_TRIGGER;
 	trigger->parent = ent;
@@ -2388,7 +2388,7 @@ void G_MiscModelExplosion( vec3_t mins, vec3_t maxs, int size, material_t chunkT
 	VectorAdd( mins, maxs, mid );
 	VectorScale( mid, 0.5f, mid );
 
-	te = G_TempEntity( mid, EV_MISC_MODEL_EXP );
+	te = G_TempEntity( mid, EV_MISC_MODEL_EXP, ENTITYNUM_WORLD );
 
 	VectorCopy(maxs, te->s.origin2);
 	VectorCopy(mins, te->s.angles2);
@@ -2399,7 +2399,7 @@ void G_MiscModelExplosion( vec3_t mins, vec3_t maxs, int size, material_t chunkT
 void G_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins, const vec3_t maxs,
 						float speed, int numChunks, material_t chunkType, int customChunk, float baseScale )
 {
-	gentity_t *te = G_TempEntity( origin, EV_DEBRIS );
+	gentity_t *te = G_TempEntity( origin, EV_DEBRIS, ENTITYNUM_WORLD );
 
 	//Now it's time to cram everything horribly into the entitystate of an event entity.
 	te->s.owner = owner;
@@ -2504,7 +2504,7 @@ void funcBBrushDieGo (gentity_t *self)
 		//explode
 		G_RadiusDamage( org, self, self->splashDamage, self->splashRadius, self, NULL, MOD_UNKNOWN );
 
-		te = G_TempEntity( org, EV_GENERAL_SOUND );
+		te = G_TempEntity( org, EV_GENERAL_SOUND, ENTITYNUM_WORLD );
 		te->s.eventParm = G_SoundIndex("sound/weapons/explosions/cargoexplode.wav");
 	}
 
@@ -2912,7 +2912,7 @@ void GlassDie(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int da
 
 	self->splashRadius = 40; // ?? some random number, maybe it's ok?
 
-	te = G_TempEntity( dif, EV_GLASS_SHATTER );
+	te = G_TempEntity( dif, EV_GLASS_SHATTER, ENTITYNUM_WORLD );
 	te->s.genericenemyindex = self->s.number;
 	VectorCopy(self->pos1, te->s.origin);
 	VectorCopy(self->pos2, te->s.angles);
@@ -2933,7 +2933,7 @@ void GlassDie_Old(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, in
 
 	G_UseTargets(self, attacker);
 
-	te = G_TempEntity( dif, EV_GLASS_SHATTER );
+	te = G_TempEntity( dif, EV_GLASS_SHATTER, ENTITYNUM_WORLD );
 	te->s.genericenemyindex = self->s.number;
 	VectorCopy(self->r.maxs, te->s.origin);
 	VectorCopy(self->r.mins, te->s.angles);

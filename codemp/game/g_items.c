@@ -433,7 +433,7 @@ qboolean PlaceShield(gentity_t *playerent)
 		if ( !tr.startsolid && !tr.allsolid )
 		{
 			// got enough room so place the portable shield
-			shield = G_Spawn();
+			shield = G_Spawn( playerent->s.number );
 
 			// Figure out what direction the shield is facing.
 			if (fabs(fwd[0]) > fabs(fwd[1]))
@@ -1074,7 +1074,7 @@ void ItemUse_Sentry( gentity_t *ent )
 	fwdorg[1] = ent->client->ps.origin[1] + fwd[1]*64;
 	fwdorg[2] = ent->client->ps.origin[2] + fwd[2]*64;
 
-	sentry = G_Spawn();
+	sentry = G_Spawn( ent->s.number );
 
 	sentry->classname = "sentryGun";
 	sentry->s.modelindex = G_ModelIndex("models/items/psgun.glm"); //replace ASAP
@@ -1420,7 +1420,7 @@ void ItemUse_UseDisp(gentity_t *ent, int type)
 		vec3_t fwd, pos;
 		gentity_t	*te;
 
-		eItem = G_Spawn();
+		eItem = G_Spawn( ent->s.number );
 		eItem->r.ownerNum = ent->s.number;
 		eItem->classname = item->classname;
 
@@ -1439,7 +1439,7 @@ void ItemUse_UseDisp(gentity_t *ent, int type)
 
 	//	G_SetAnim( ent, NULL, SETANIM_TORSO, BOTH_THERMAL_THROW, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
 
-		te = G_TempEntity( ent->client->ps.origin, EV_LOCALTIMER );
+		te = G_TempEntity( ent->client->ps.origin, EV_LOCALTIMER, ent->s.number );
 		te->s.time = level.time;
 		te->s.time2 = TOSS_DEBOUNCE_TIME;
 		te->s.owner = ent->client->ps.clientNum;
@@ -1913,7 +1913,7 @@ gentity_t *EWeb_Create(gentity_t *spawner)
 		return NULL;
 	}
 
-	ent = G_Spawn();
+	ent = G_Spawn( ent->s.number );
 
 	ent->clipmask = MASK_PLAYERSOLID;
 	ent->r.contents = MASK_PLAYERSOLID;
@@ -2353,10 +2353,10 @@ void RespawnItem( gentity_t *ent ) {
 
 		// if the powerup respawn sound should Not be global
 		if (ent->speed) {
-			te = G_TempEntity( ent->s.pos.trBase, EV_GENERAL_SOUND );
+			te = G_TempEntity( ent->s.pos.trBase, EV_GENERAL_SOUND, ent->s.number );
 		}
 		else {
-			te = G_TempEntity( ent->s.pos.trBase, EV_GLOBAL_SOUND );
+			te = G_TempEntity( ent->s.pos.trBase, EV_GLOBAL_SOUND, ent->s.number );
 		}
 		te->s.eventParm = G_SoundIndex( "sound/items/respawn1" );
 		te->r.svFlags |= SVF_BROADCAST;
@@ -2600,13 +2600,13 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 		if (!ent->speed) {
 			gentity_t	*te;
 
-			te = G_TempEntity( ent->s.pos.trBase, EV_GLOBAL_ITEM_PICKUP );
+			te = G_TempEntity( ent->s.pos.trBase, EV_GLOBAL_ITEM_PICKUP, ent->s.number );
 			te->s.eventParm = ent->s.modelindex;
 			te->r.svFlags |= SVF_BROADCAST;
 		} else {
 			gentity_t	*te;
 
-			te = G_TempEntity( ent->s.pos.trBase, EV_GLOBAL_ITEM_PICKUP );
+			te = G_TempEntity( ent->s.pos.trBase, EV_GLOBAL_ITEM_PICKUP, ent->s.number );
 			te->s.eventParm = ent->s.modelindex;
 			// only send this temp entity to a single client
 			te->r.svFlags |= SVF_SINGLECLIENT;
@@ -2690,10 +2690,10 @@ LaunchItem
 Spawns an item and tosses it forward
 ================
 */
-gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
+gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity, int creatorEntNum ) {
 	gentity_t	*dropped;
 
-	dropped = G_Spawn();
+	dropped = G_Spawn( creatorEntNum );
 
 	dropped->s.eType = ET_ITEM;
 	dropped->s.modelindex = item - bg_itemlist;	// store item number in modelindex
@@ -2786,7 +2786,7 @@ gentity_t *Drop_Item( gentity_t *ent, gitem_t *item, float angle ) {
 	VectorScale( velocity, 150, velocity );
 	velocity[2] += 200 + Q_flrand(-1.0f, 1.0f) * 50;
 
-	return LaunchItem( item, ent->s.pos.trBase, velocity );
+	return LaunchItem( item, ent->s.pos.trBase, velocity, ent->s.number );
 }
 
 

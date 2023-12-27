@@ -595,7 +595,7 @@ void WP_SaberInitBladeData( gentity_t *ent )
 				G_FreeEntity(checkEnt);
 
 				//now init it manually and reuse this ent slot.
-				G_InitGentity(checkEnt);
+				G_InitGentity(checkEnt, ent->s.number);
 				saberent = checkEnt;
 			}
 		}
@@ -607,7 +607,7 @@ void WP_SaberInitBladeData( gentity_t *ent )
 	//ever be used on the server.
 	if (!saberent)
 	{ //ok, make one then
-		saberent = G_Spawn();
+		saberent = G_Spawn( ent->s.number );
 	}
 	ent->client->ps.saberEntityNum = ent->client->saberStoredIndex = saberent->s.number;
 	saberent->classname = "lightsaber";
@@ -3608,7 +3608,7 @@ void WP_SaberDoHit( gentity_t *self, int saberNum, int bladeNum )
 			}
 		}
 
-		te = G_TempEntity( dmgSpot[i], EV_SABER_HIT );
+		te = G_TempEntity( dmgSpot[i], EV_SABER_HIT, self->s.number);
 		if ( te )
 		{
 			te->s.otherEntityNum = victimEntityNum[i];
@@ -3655,7 +3655,7 @@ void WP_SaberDoHit( gentity_t *self, int saberNum, int bladeNum )
 				{
 					if (totalDmg[i] > SABER_NONATTACK_DAMAGE)
 					{ //I suppose I could tie this into the saberblock event, but I'm tired of adding flags to that thing.
-						gentity_t *teS = G_TempEntity( te->s.origin, EV_SABER_CLASHFLARE );
+						gentity_t *teS = G_TempEntity( te->s.origin, EV_SABER_CLASHFLARE, self->s.number );
 						VectorCopy(te->s.origin, teS->s.origin);
 					}
 					te->s.eventParm = 0;
@@ -3768,7 +3768,7 @@ void WP_SaberDoClash( gentity_t *self, int saberNum, int bladeNum )
 {
 	if ( saberDoClashEffect )
 	{
-		gentity_t *te = G_TempEntity( saberClashPos, EV_SABER_BLOCK );
+		gentity_t *te = G_TempEntity( saberClashPos, EV_SABER_BLOCK, self->s.number );
 		VectorCopy(saberClashPos, te->s.origin);
 		VectorCopy(saberClashNorm, te->s.angles);
 		te->s.eventParm = saberClashEventParm;
@@ -4489,7 +4489,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			//do bounce sound & force feedback
 			WP_SaberBounceSound( self, rSaberNum, rBladeNum );
 			//do hit effect
-			te = G_TempEntity( tr.endpos, EV_SABER_HIT );
+			te = G_TempEntity( tr.endpos, EV_SABER_HIT, self->s.number );
 			te->s.otherEntityNum = ENTITYNUM_NONE;//we didn't hit anyone in particular
 			te->s.otherEntityNum2 = self->s.number;//send this so it knows who we are
 			te->s.weapon = rSaberNum;
@@ -5865,6 +5865,7 @@ static QINLINE qboolean CheckThrownSaberDamaged(gentity_t *saberent, gentity_t *
 		ent->health > 0 && ent->takedamage &&
 		trap->InPVS(ent->client->ps.origin, saberent->r.currentOrigin) &&
 		ent->client->sess.sessionTeam != TEAM_SPECTATOR &&
+		!(ent->client->ps.entExcludes[saberOwner->s.number]) &&
 		(ent->client->pers.connected || ent->s.eType == ET_NPC))
 	{ //hit a client
 		if (ent->inuse && ent->client &&
@@ -5896,7 +5897,7 @@ static QINLINE qboolean CheckThrownSaberDamaged(gentity_t *saberent, gentity_t *
 				{ //they blocked it
 					WP_SaberBlockNonRandom(ent, tr.endpos, qfalse);
 
-					te = G_TempEntity( tr.endpos, EV_SABER_BLOCK );
+					te = G_TempEntity( tr.endpos, EV_SABER_BLOCK, saberOwner->s.number );
 					VectorCopy(tr.endpos, te->s.origin);
 					VectorCopy(tr.plane.normal, te->s.angles);
 					if (!te->s.angles[0] && !te->s.angles[1] && !te->s.angles[2])
@@ -5952,7 +5953,7 @@ static QINLINE qboolean CheckThrownSaberDamaged(gentity_t *saberent, gentity_t *
 						G_Damage(ent, saberOwner, saberOwner, dir, tr.endpos, saberent->damage, dflags, MOD_SABER);
 					}
 
-					te = G_TempEntity( tr.endpos, EV_SABER_HIT );
+					te = G_TempEntity( tr.endpos, EV_SABER_HIT, saberOwner->s.number );
 					te->s.otherEntityNum = ent->s.number;
 					te->s.otherEntityNum2 = saberOwner->s.number;
 					te->s.weapon = 0;//saberNum
@@ -6035,7 +6036,7 @@ static QINLINE qboolean CheckThrownSaberDamaged(gentity_t *saberent, gentity_t *
 					G_Damage(ent, saberOwner, saberOwner, dir, tr.endpos, 5, dflags, MOD_SABER);
 				}
 
-				te = G_TempEntity( tr.endpos, EV_SABER_HIT );
+				te = G_TempEntity( tr.endpos, EV_SABER_HIT, saberOwner->s.number );
 				te->s.otherEntityNum = ENTITYNUM_NONE; //don't do this for throw damage
 				//te->s.otherEntityNum = ent->s.number;
 				te->s.otherEntityNum2 = saberOwner->s.number;//actually, do send this, though - for the overridden per-saber hit effects/sounds
@@ -6059,7 +6060,7 @@ static QINLINE qboolean CheckThrownSaberDamaged(gentity_t *saberent, gentity_t *
 					else
 					{
 						//I suppose I could tie this into the saberblock event, but I'm tired of adding flags to that thing.
-						gentity_t *teS = G_TempEntity( te->s.origin, EV_SABER_CLASHFLARE );
+						gentity_t *teS = G_TempEntity( te->s.origin, EV_SABER_CLASHFLARE, saberOwner->s.number );
 						VectorCopy(te->s.origin, teS->s.origin);
 
 						te->s.eventParm = 0;
@@ -6219,7 +6220,7 @@ void MakeDeadSaber(gentity_t *ent)
 		return;
 	}
 
-	saberent = G_Spawn();
+	saberent = G_Spawn( ent->s.number );
 
 	VectorCopy(ent->r.currentOrigin, startorg);
 	VectorCopy(ent->r.currentAngles, startang);
@@ -8738,7 +8739,7 @@ nextStep:
 			{
 				gentity_t *te;
 				vec3_t dir;
-				te = G_TempEntity( g_entities[saberNum].r.currentOrigin, EV_SABER_BLOCK );
+				te = G_TempEntity( g_entities[saberNum].r.currentOrigin, EV_SABER_BLOCK, self->s.number );
 				VectorSet( dir, 0, 1, 0 );
 				VectorCopy(g_entities[saberNum].r.currentOrigin, te->s.origin);
 				VectorCopy(dir, te->s.angles);
